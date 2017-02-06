@@ -1,0 +1,599 @@
+l03 = ToExpression[
+   Import["https://www.dropbox.com/s/vyn9l0uakv5anq0/l03.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+ab201 = ToExpression[
+   Import["https://www.dropbox.com/s/y2vhfh35q2rk2y4/ab201.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+nn = ToExpression[
+   Import["https://www.dropbox.com/s/e47bteems0tpydb/nn.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+cardpicture[{suit_, val_}] := 
+  Framed[Column[{val, suit}, Center, 0, ItemSize -> {3/2, 1}, 
+    ItemStyle -> 
+     Directive[10, "Label", 
+      Switch[suit, "\[HeartSuit]" | "\[DiamondSuit]", 
+       Darker[Red, 0.2], "\[ClubSuit]" | "\[SpadeSuit]", Black]]]];
+long567[z_List] := {Last@SortBy[eph /@ Subsets[#, {5}], First] /. l03,
+      N@Mean[Flatten[Module[{a, b, c, d, e, f, g, h},
+          a = #;
+          b = Subsets[Complement[carddeck, a], {7 - Length@a}];
+          c = ConstantArray[#, Length@b];
+          d = Flatten[#, 1] & /@ Thread@{c, b};
+          
+          e = Max@(eph /@ Subsets[d[[#]], {5}])[[All, 1]] & /@ 
+            Range@Length@b] /. l03]]} &@z;
+list = {}; comp[n_Integer] := Module[{},
+  If[n > 2, #[[1]], Column@#] &@{Dynamic[
+     If[Length@Setting@# < n, #, 
+        If[n == 2, pre, long567]@Setting@#] &@Dynamic[list], 
+     SynchronousUpdating -> False],
+    Grid[Partition[
+      Table[DynamicModule[{pressed = False}, 
+        With[{idx = cd[[i]]}, 
+         Button[cardpicture@cd[[i]], pressed = ! pressed;
+          
+          list = If[pressed, Append[list, idx], 
+            DeleteCases[list, idx]], 
+          Appearance -> 
+           Dynamic@If[pressed, "Pressed", Automatic]]]], {i, 52}], 
+      13]]}];
+f1[a_List] := Reverse /@ Map[Length, #, {2}] &@a;
+f2[a_List] := 
+  Reverse /@ (Sort /@ 
+         SortBy[# /. {"A" -> 14, "J" -> 11, "K" -> 13, "Q" -> 12}, 
+          Length] & /@ (Split /@ Sort /@ Transpose[#])) &@a;
+f3[a_List] := Flatten@f2[a][[2]] - 1;
+f4[a_List] := f1[f2@a];
+carddeck = 
+  Reverse[Flatten[
+    Map[({{"\[HeartSuit]", #}, {"\[ClubSuit]", #}, {"\[DiamondSuit]", \
+#}, {"\[SpadeSuit]", #}}) &, 
+     Join[Table[i, {i, 2, 10}], {"J", "Q", "K", "A"}]], 1]];
+cardpicture[{suit_, val_}] := 
+  Framed[Column[{val, suit}, Center, 0, ItemSize -> {3/2, 1}, 
+    ItemStyle -> 
+     Directive[10, "Label", 
+      Switch[suit, "\[HeartSuit]" | "\[DiamondSuit]", 
+       Darker[Red, 0.2], "\[ClubSuit]" | "\[SpadeSuit]", Black]]]];
+cd = SortBy[carddeck /. {"J" -> 11, "Q" -> 12, "K" -> 13, "A" -> 14}, 
+    First] /. {11 -> "J" , 12 -> "Q", 13 -> "K", 14 -> "A"};
+sc[a_List] := (a[[All, 2]] /. {"A" -> 14, "J" -> 11, "K" -> 13, 
+      "Q" -> 12}) - 1;
+sortbysc[a_List] := (Transpose@(SortBy[#, First] &@
+       Thread@{sc@a, a}))[[2]];
+eph[a_List] := 
+  Module[{straight, e, f, g, pp, pl, pr, pq, q, r, s, t, u, v, w, x, 
+    y, z, q1, r1, s1, t1, u1, v1, w1, x1, y1, z1, ff, hh, jj, ll, zz},
+   pl = 371293; pr = 13; pq = pr; g = sortbysc@a;
+   straight = 
+    MemberQ[Sort /@ 
+      Take[Partition[Join[Table[i, {i, 2, 10}], {"J", "Q", "K", "A"}],
+         5, 1, 1], 9], Sort[Last[Transpose[a]]]];
+   e = f3@a; f = f4@a;
+   z = (pr^(-#) & /@ Range[5])(*high card*); z1 = Total[z*e];
+   y = (pr^(-#) & /@ {1, 1, 2, 3, 4})(*pair*); y1 = Total[y*e];
+   x = (pr^(-#) & /@ {1, 1, 2, 2, 3})(*two pairs*); x1 = Total[x*e];
+   w = (pr^(-#) & /@ {1, 1, 1, 2, 3})(*three of a kind*); 
+   w1 = Total[w*e];
+   v = (pr^(-#) & /@ Range[5])(*straight*); v1 = Total[v*e];
+   u = (pr^(-#) & /@ Range[5])(*flush*); u1 = Total[u*e];
+   t = (pr^(-#) & /@ {1, 1, 1, 2, 2})(*full house*); t1 = Total[t*e];
+   s = (pr^(-#) & /@ {1, 1, 1, 1, 2})(*four of a kind*); 
+   s1 = Total[s*e];
+   r = (pr^(-#) & /@ Range[5])(*straight flush*); r1 = Total[r*e];
+   q = (pr^(-#) & /@ Range[5])(*royal flush*); q1 = Total[q*e];
+   zz = If[
+     g[[All, 2]] == {2, 3, 4, 5, "A"} && f[[1]] != {5}, {{19*10^6}, 
+      "straight", Flatten[{{Last@g}, Most@g}, 1]},
+     If[g[[All, 2]] == {2, 3, 4, 5, "A"} && 
+       f[[1]] == {5}, {{2*19*10^6}, "straight flush", 
+       Flatten[{{Last@g}, Most@g}, 1]},
+      If[straight,
+       If[ f[[1]] == {5},
+        If[Sort[Last[Transpose[a]]] == {10, "A", "J", "K", "Q"},
+         {pl {8*pq + q1}, "royal flush", g}, {pl {8*pq + r1}, 
+          "straight flush", g}], {pl {4*pq + v1}, "straight", g}],
+       If[ f[[1]] == {5}, {pl {5*pq + u1}, "flush", g},
+        Switch[f[[2]],
+         {1, 4}, {pl {7*pq + s1}, "four of a kind", g},
+         {2, 3}, {pl {6*pq + t1}, "full house", g},
+         {1, 1, 3}, {pl {3*pq + w1}, "three of a kind", g},
+         {1, 2, 2}, {pl {2*pq + x1}, "two pairs", g},
+         {1, 1, 1, 2}, {pl {1*pq + y1}, "pair", g},
+         {1, 1, 1, 1, 1}, {pl {z1}, "high card", g}
+         ]]]]]
+   ];
+ephr[a_List] := eph@a /. l03;
+deckreplace = 
+  Flatten@Thread[
+    Flatten[{#[[3]], #[[2]], #[[4]], #[[1]]} &@
+       Transpose@Partition[carddeck, 4], 1] -> 
+     Flatten[{#[[1]], #[[4]], #[[3]], #[[
+          2]]} &@(Flatten[{{Last@#}, Most@#}] & /@ (Reverse /@ 
+           Partition[
+            ImageResize[#, 50] & /@ 
+             Flatten[
+              ImagePartition[
+               Import["https://www.dropbox.com/s/sfc27f7gv58s2dc/\
+cards.png?dl=1"], {73, 98}]], 13])), 1]];
+pokerreplace = 
+  ToExpression[
+   Import["https://www.dropbox.com/s/i3p6kg8ntrpmy4n/pokerreplace.txt?\
+dl=1", "List", CharacterEncoding -> "UTF8"]];
+flopRank[n_List] := 
+  Grid[{{Grid[{#[[1, 3]] /. deckreplace}], Text@#[[1, 2]], 
+       Row[{Style[Text@ToString@Round[100 #[[1, 1, 1]], 0.01], Black],
+          Style[Text@"%", Black]}], 
+       Row[{Style[Text@ToString@Round[100 #[[2]], 0.01], Red], 
+         Style[Text@"%", Red]}]} &@(long567@n /. pokerreplace)}];
+pre[a_List] := 
+  If[Length@a < 2, {}, 
+   Grid[{{Grid[{#[[2]]}], 
+        Row[{Style[Text@ToString@Round[100 #[[1]], 0.01], Black], 
+          Style[Text@"%", Black]}]}}] &@(If[Length@a == 0, {}, 
+         If[Length@a == 1, a, Module[{t, q, r, p},
+           t = #;
+           
+           q = Select[{N[#[[1]]/169], #[[2]]} & /@ 
+              ab201, #[[2, 1, 2]] == t[[1, 2]] && #[[2, 2, 2]] == 
+                t[[2, 2]] &];
+           r = Select[q, #[[2, 1, 1]] == #[[2, 2, 1]] &];
+           p = If[t[[1, 1]] == t[[2, 1]], r, Complement[q, r]];
+           {N@p[[1, 1]], t}
+           ]]] &@a /. deckreplace)];
+comppre[n_Integer] := 
+ If[n == 0, {}, 
+  Dynamic[pre@Setting@Dynamic[Take[list, UpTo@2]], 
+   SynchronousUpdating -> False]]
+comp2[n_Integer] := Module[{},
+   Column@{Dynamic[
+      If[Length@Setting@# < n, #, flopRank@Setting@#] &@Dynamic[list],
+       SynchronousUpdating -> False],
+     Grid[
+      Partition[
+       Table[DynamicModule[{pressed = False}, 
+         With[{idx = cd[[i]]}, 
+          Button[cardpicture@cd[[i]], pressed = ! pressed;
+           
+           list = If[pressed, Append[list, idx], 
+             DeleteCases[list, idx]], 
+           Appearance -> 
+            Dynamic@If[pressed, "Pressed", Automatic]]]], {i, 52}], 
+       13]]}];
+(*fixed:*)
+pokersorta = 
+  ToExpression[
+   Import[
+    "https://www.dropbox.com/s/5mq1lp8wqc93hjo/pokersorta.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+data2 = MapIndexed[{#2, #} &, pokersorta[[All, 4]]];
+if = Interpolation[data2];
+iff[n_] := InverseFunction[if][Round[n, 0.00001]]/Length@pokersorta;
+long567a[li_List] := {#[[1, 3]], #[[1, 2]], 100 #[[1, 1, 1]], 
+     100 iff@#[[2]]} &@long567@li;
+flopRanks[n_List] := 
+  Grid[{{Grid[{#[[1]] /. deckreplace}], Text@#[[2]], 
+       Row[{Style[Text@ToString@Round[#[[3]], 0.01], Black], 
+         Style[Text@"%", Black]}], 
+       Row[{Style[Text@ToString@Round[#[[4]], 0.01], Red], 
+         Style[Text@"%", Red]}]} &@(long567a@n)}];
+(*web.mit.edu/willma/www/2013lec2.pdf*)
+(*
+ephh=eph/@Subsets[carddeck,{5}];
+Export["ephh.txt",ephh]
+ephf=First/@SplitBy[SortBy[ephh,First],First];
+Export["ephf.txt",ephf]
+*)
+ephf = ToExpression[
+   Import["https://www.dropbox.com/s/7vvepskca4638eo/ephf.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+newsort[li_List] := 
+  With[{z = sortbysc@#}, 
+     If[MemberQ[
+       Permutations@{"A", 2, 3, 4, 5}, #[[All, 
+        2]]], {{Last[z][[1]], "A"}}~Join~Most@z, z]] &@li;
+neweph[li_List] := (Module[{a, b, c, d, e, f},
+       f = {1020, 384, 144, 64, 1020, 4, 24, 4, 4, 4};
+       a = SplitBy[ephf, #[[2]] &];
+       b = Table[#[[All, 2]] & /@ Last /@ a[[t]], {t, 10}];
+       c = {0, 1302540, 1098240, 123552, 54912, 10200, 5108, 3744, 
+         624, 36, 4};
+       d = Position[b, #[[All, 2]]];
+       e = 
+        Total[Take[c, #[[1]]]] + f[[#[[1]]]] #[[2]] &@
+         If[Length@d == 1, Flatten@d, 
+          If[Length@DeleteDuplicates@#[[All, 1]] == 1, d[[2]], 
+           d[[1]]]];
+       e
+       ] &@newsort@li)/Binomial[52, 5];
+
+b2 = ToExpression[
+   Import["https://www.dropbox.com/s/i1fiwpcnio4f2av/b2.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+b3 = ToExpression[
+   Import["https://www.dropbox.com/s/l8o1p52yka6p0sb/b3.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+b4 = ToExpression[
+   Import["https://www.dropbox.com/s/l6x3us0wzv2nw6e/b4.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+b5 = ToExpression[
+   Import["https://www.dropbox.com/s/v8merc7axx4igii/b5.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+b6 = ToExpression[
+   Import["https://www.dropbox.com/s/wtjf98r8659wi28/b6.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+b7 = ToExpression[
+   Import["https://www.dropbox.com/s/b0y2agyd2fvzkjx/b7.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+b8 = ToExpression[
+   Import["https://www.dropbox.com/s/k6zdh0fdj4w51xv/b8.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+b9 = ToExpression[
+   Import["https://www.dropbox.com/s/x3b0z7ytzhxycox/b9.txt?dl=1", 
+    "List", CharacterEncoding -> "UTF8"]];
+pb[p_, st_] := 
+  Position[(If[Length@DeleteDuplicates@#[[All, 1]] == 1, 
+         Thread@{{"\[SpadeSuit]", "\[SpadeSuit]"}, #[[All, 2]]}, 
+         Thread@{{"\[SpadeSuit]", "\[HeartSuit]"}, #[[All, 2]]}] & /@ 
+       ToExpression["b" <> ToString[p]][[All, 2]]) /. 
+     Module[{z, y, x, w, v, u},
+      z = 
+       Thread@{Reverse[carddeck[[1 ;; -1 ;; 4]]], 
+         Reverse[carddeck[[4 ;; -1 ;; 4]]]};
+      y = 
+       Select[sortbysc /@ 
+          Subsets[Sort@Flatten[z, 1], {2}], #[[1, 1]] == 
+           "\[HeartSuit]" &] /. {"\[HeartSuit]" -> "\[SpadeSuit]", 
+         "\[SpadeSuit]" -> "\[HeartSuit]"};
+      x = 
+       If[#[[1, 2]] == #[[2, 2]], #[[All, 2]], 
+          If[#[[1, 1]] == #[[2, 1]], #[[All, 2]]~
+            Join~{s}, #[[All, 2]]~Join~{o}]] & /@ y;
+      w = 
+       StringJoin /@ (ToString /@ # & /@ (x /. {10 -> t, "J" -> j, 
+             "Q" -> q, "K" -> k, "A" -> a}));
+      Thread[y -> w]
+      ], st][[1, 1]];
+pc[p_] := 
+  Thread@{Range@
+     169, (If[Length@DeleteDuplicates@#[[All, 1]] == 1, 
+         Thread@{{"\[SpadeSuit]", "\[SpadeSuit]"}, #[[All, 2]]}, 
+         Thread@{{"\[SpadeSuit]", "\[HeartSuit]"}, #[[All, 2]]}] & /@ 
+       ToExpression["b" <> ToString[p]][[All, 2]]) /. 
+     Module[{z, y, x, w, v, u},
+      z = 
+       Thread@{Reverse[carddeck[[1 ;; -1 ;; 4]]], 
+         Reverse[carddeck[[4 ;; -1 ;; 4]]]};
+      y = 
+       Select[sortbysc /@ 
+          Subsets[Sort@Flatten[z, 1], {2}], #[[1, 1]] == 
+           "\[HeartSuit]" &] /. {"\[HeartSuit]" -> "\[SpadeSuit]", 
+         "\[SpadeSuit]" -> "\[HeartSuit]"};
+      x = 
+       If[#[[1, 2]] == #[[2, 2]], #[[All, 2]], 
+          If[#[[1, 1]] == #[[2, 1]], #[[All, 2]]~
+            Join~{s}, #[[All, 2]]~Join~{o}]] & /@ y;
+      w = 
+       StringJoin /@ (ToString /@ # & /@ (x /. {10 -> t, "J" -> j, 
+             "Q" -> q, "K" -> k, "A" -> a}));
+      Thread[y -> w]
+      ]};
+pcg[n_Integer] := 
+  Grid[Partition[pc[n][[All, 2]], 13], 
+   Background ->  {Automatic, Automatic, 
+     Thread[Flatten[Table[{i, j} , {i, 13}, {j, 13}], 
+        1] -> ((First@Characters@# & /@ pc[n][[All, 2]]) /. 
+         Thread[ToString /@ (Reverse[carddeck[[4 ;; -1 ;; 4]]][[All, 
+               2]] /. {10 -> t, "J" -> j, "Q" -> q, "K" -> k, 
+               "A" -> a}) -> 
+           With[{a = Hue[#] & /@ (1/Range@13)}, 
+            Rest@a~Join~{a[[1]]}]])]}];
+
+pb[p_, st_] := 
+  Position[(If[Length@DeleteDuplicates@#[[All, 1]] == 1, 
+         Thread@{{"\[SpadeSuit]", "\[SpadeSuit]"}, #[[All, 2]]}, 
+         Thread@{{"\[SpadeSuit]", "\[HeartSuit]"}, #[[All, 2]]}] & /@ 
+       ToExpression["b" <> ToString[p]][[All, 2]]) /. 
+     Module[{z, y, x, w, v, u},
+      z = 
+       Thread@{Reverse[carddeck[[1 ;; -1 ;; 4]]], 
+         Reverse[carddeck[[4 ;; -1 ;; 4]]]};
+      y = 
+       Select[sortbysc /@ 
+          Subsets[Sort@Flatten[z, 1], {2}], #[[1, 1]] == 
+           "\[HeartSuit]" &] /. {"\[HeartSuit]" -> "\[SpadeSuit]", 
+         "\[SpadeSuit]" -> "\[HeartSuit]"};
+      x = 
+       If[#[[1, 2]] == #[[2, 2]], #[[All, 2]], 
+          If[#[[1, 1]] == #[[2, 1]], #[[All, 2]]~
+            Join~{s}, #[[All, 2]]~Join~{o}]] & /@ y;
+      w = 
+       StringJoin /@ (ToString /@ # & /@ (x /. {10 -> t, "J" -> j, 
+             "Q" -> q, "K" -> k, "A" -> a}));
+      Thread[y -> w]
+      ], st][[1, 1]];
+
+ll = Flatten[{ToExpression[
+     Import["https://www.dropbox.com/s/x1r83ht49ogxn8e/ll01.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/xr1beknpigzt9km/ll02.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/rgs1t1qr5z3g0sa/ll03.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/deq3ih875oxplbb/ll04.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/aybn8nvn6wzmkvd/ll05.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/uhtgd040mpjq14q/ll06.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/j47ml5mx46ovkoc/ll07.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/r72d1tzfk4tfq5d/ll08.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/40amx31qw1dneav/ll09.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/wthi88ebw0755zi/ll10.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/0qsciyvmb1fdxj6/ll11.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/j6jf0up7izvbdwe/ll12.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/k72l6fin3sbajwq/ll13.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/1i969me9py50olo/ll14.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/ljmqh8vbnb6a45f/ll15.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/nm52btf8yy0sgmv/ll16.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/3kchyylvsnni7z9/ll17.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/w28t6adeapgk9dl/ll18.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/ldwxu42yo9ghx9f/ll19.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/x3c0pfeh7zomuki/ll20.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/ep5nlxcbovgowr0/ll21.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/0lf8czpy8tewuyn/ll22.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/4gx5yabbl0949rv/ll23.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/qmhyhv6kq379mof/ll24.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/zt271uwakpfat9x/ll25.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]],
+    ToExpression[
+     Import["https://www.dropbox.com/s/qzi4qs3mck3nmxd/ll26.txt?dl=1",
+       "List", CharacterEncoding -> "UTF8"]]}, 1];
+
+
+lll = SplitBy[SortBy[ll, First], #[[2]] &];
+dealbest[mf_List] := Module[{a, b, c, d, e},
+   a = Subsets[Complement[carddeck, mf], {7 - Length@mf}];
+   b = Flatten[
+     Subsets[#, {5}] & /@ (Flatten[#, 1] & /@ 
+        Thread@{ConstantArray[Drop[mf, 2], Length@a], a}), 1];
+   c = eph /@ b;
+   d = Flatten@c[[All, 1]];
+   Rest@c[[Position[d, Max@d][[1, 1]]]]
+   ];
+mybest[mf_List] :=
+  Module[{a, b, c, d, e},
+   a = Subsets[Complement[carddeck, mf], {7 - Length@mf}];
+   b = Flatten[
+     Subsets[#, {5}] & /@ (Flatten[#, 1] & /@ 
+        Thread@{ConstantArray[mf, Length@a], a}), 1];
+   c = eph /@ b;
+   d = Flatten@c[[All, 1]];
+   Rest@c[[Position[d, Max@d][[1, 1]]]]
+   ];
+theirmax[mf_List] := If[Length@mf == 7,
+   Module[{a, b, c, d},
+    a = With[{z = Subsets[Complement[carddeck, mf], {2}]}, 
+      Flatten[Subsets[#, {5}] & /@ (Flatten[#, 1] & /@ 
+          Thread@{ConstantArray[Drop[mf, 2], Length@z], z}), 1]];
+    b = eph /@ a;
+    c = Flatten@b[[All, 1]]; Rest@b[[Position[c, Max@c][[1, 1]]]]], 
+   If[Length@mf == 6, 
+    Module[{a, b, c, d}, 
+     a = Flatten[
+       Table[Select[Flatten[Drop[lll, 3], 1][[All, 3]], 
+         ContainsNone[#, Take[mf, 2]] && ContainsAll[#, t] &], {t, 
+         Flatten[Drop[SplitBy[Subsets[Drop[mf, 2]], Length], 
+           Length@mf - 3], 1]}], 1];
+     b = eph /@ a; c = Flatten@b[[All, 1]];
+     Rest@b[[Position[c, Max@c][[1, 1]]]]], 
+    If[Length@mf == 5, 
+     Module[{a, b, c, d, e}, 
+      a = Flatten[
+        Table[Select[Flatten[Take[lll, -3], 1][[All, 3]], 
+          ContainsNone[#, Take[mf, 2]] && ContainsAll[#, t] &], {t, 
+          Flatten[Drop[SplitBy[Subsets[Drop[mf, 2]], Length], 
+            Length@mf - 3], 1]}], 1];
+      b = eph /@ a; c = Flatten@b[[All, 1]];
+      Rest@b[[Position[c, Max@c][[1, 1]]]]]]]];
+cd = SortBy[carddeck /. {"J" -> 11, "Q" -> 12, "K" -> 13, "A" -> 14}, 
+    First] /. {11 -> "J" , 12 -> "Q", 13 -> "K", 14 -> "A"};
+Clear[list]
+list = {}; comp[n_Integer] := Module[{}, list = {};
+  Column@{Dynamic[
+     If[Length@Setting@# < 5, #, 
+        Grid[{{Take[Setting@#, 2]}, {Drop[Setting@#, 2]}, 
+          Reverse@Flatten[{"deck max", N@neweph@Setting@#[[2]], 
+               Setting@#}, 1] &@dealbest[Setting@#], 
+          Reverse@Flatten[{"my max", N@neweph@Setting@#[[2]], 
+               Setting@#}, 1] &@mybest[Setting@#], 
+          Reverse@Flatten[{"their max", N@neweph@Setting@#[[2]], 
+               Setting@#}, 1] &@theirmax[Setting@#]}, 
+         Alignment -> Left]] &@Dynamic[list], 
+     SynchronousUpdating -> False],
+    Grid[Partition[
+      Table[DynamicModule[{pressed = False}, 
+        With[{idx = cd[[i]]}, 
+         Button[cardpicture@cd[[i]], pressed = ! pressed;
+          
+          list = If[pressed, Append[list, idx], 
+            DeleteCases[list, idx]], 
+          Appearance -> 
+           Dynamic@If[pressed, "Pressed", Automatic]]]], {i, 52}], 
+      13]]}];
+
+cd2 = {{"\[ClubSuit]", 2}, {"\[ClubSuit]", 3}, {"\[ClubSuit]", 
+    4}, {"\[ClubSuit]", 5}, {"\[ClubSuit]", 6}, {"\[ClubSuit]", 
+    7}, {"\[ClubSuit]", 8}, {"\[ClubSuit]", 9}, {"\[ClubSuit]", 
+    10}, {"\[ClubSuit]", "J"}, {"\[ClubSuit]", "Q"}, {"\[ClubSuit]", 
+    "K"}, {"\[ClubSuit]", "A"}, {"", ""}, {"", ""}, {"\[DiamondSuit]",
+     2}, {"\[DiamondSuit]", 3}, {"\[DiamondSuit]", 
+    4}, {"\[DiamondSuit]", 5}, {"\[DiamondSuit]", 
+    6}, {"\[DiamondSuit]", 7}, {"\[DiamondSuit]", 
+    8}, {"\[DiamondSuit]", 9}, {"\[DiamondSuit]", 
+    10}, {"\[DiamondSuit]", "J"}, {"\[DiamondSuit]", 
+    "Q"}, {"\[DiamondSuit]", "K"}, {"\[DiamondSuit]", "A"}, {"", 
+    ""}, {"", ""}, {"\[HeartSuit]", 2}, {"\[HeartSuit]", 
+    3}, {"\[HeartSuit]", 4}, {"\[HeartSuit]", 5}, {"\[HeartSuit]", 
+    6}, {"\[HeartSuit]", 7}, {"\[HeartSuit]", 8}, {"\[HeartSuit]", 
+    9}, {"\[HeartSuit]", 10}, {"\[HeartSuit]", "J"}, {"\[HeartSuit]", 
+    "Q"}, {"\[HeartSuit]", "K"}, {"\[HeartSuit]", "A"}, {"", ""}, {"",
+     ""}, {"\[SpadeSuit]", 2}, {"\[SpadeSuit]", 3}, {"\[SpadeSuit]", 
+    4}, {"\[SpadeSuit]", 5}, {"\[SpadeSuit]", 6}, {"\[SpadeSuit]", 
+    7}, {"\[SpadeSuit]", 8}, {"\[SpadeSuit]", 9}, {"\[SpadeSuit]", 
+    10}, {"\[SpadeSuit]", "J"}, {"\[SpadeSuit]", 
+    "Q"}, {"\[SpadeSuit]", "K"}, {"\[SpadeSuit]", "A"}, {"", ""}, {"",
+     ""}};
+comp3[n_Integer] := Module[{}, list = {};
+   Column@{Dynamic[
+      If[Length@Setting@# < 5, #, 
+         Grid[{{Take[Setting@#, 2]}, {Drop[Setting@#, 2]}, 
+           Reverse@
+              Flatten[{"deck max", N@neweph@Setting@#[[2]], 
+                Setting@#}, 1] &@dealbest[Setting@#], 
+           Reverse@
+              Flatten[{"my max", N@neweph@Setting@#[[2]], Setting@#}, 
+               1] &@mybest[Setting@#], 
+           Reverse@
+              Flatten[{"their max", N@neweph@Setting@#[[2]], 
+                Setting@#}, 1] &@theirmax[Setting@#]}, 
+          Alignment -> Left]] &@Dynamic[list], 
+      SynchronousUpdating -> False],
+     Grid[
+      Partition[
+       Table[DynamicModule[{pressed = False}, 
+         With[{idx = cd2[[i]]}, 
+          Button[cardpicture@cd2[[i]], pressed = ! pressed;
+           
+           list = If[pressed, Append[list, idx], 
+             DeleteCases[list, idx]], 
+           Appearance -> 
+            Dynamic@If[pressed, "Pressed", Automatic]]]], {i, 60}], 
+       5]]}];
+
+pb[p_, st_] := 
+  Position[(If[Length@DeleteDuplicates@#[[All, 1]] == 1, 
+         Thread@{{"\[SpadeSuit]", "\[SpadeSuit]"}, #[[All, 2]]}, 
+         Thread@{{"\[SpadeSuit]", "\[HeartSuit]"}, #[[All, 2]]}] & /@ 
+       ToExpression["b" <> ToString[p]][[All, 2]]) /. 
+     Module[{z, y, x, w, v, u},
+      z = 
+       Thread@{Reverse[carddeck[[1 ;; -1 ;; 4]]], 
+         Reverse[carddeck[[4 ;; -1 ;; 4]]]};
+      y = 
+       Select[sortbysc /@ 
+          Subsets[Sort@Flatten[z, 1], {2}], #[[1, 1]] == 
+           "\[HeartSuit]" &] /. {"\[HeartSuit]" -> "\[SpadeSuit]", 
+         "\[SpadeSuit]" -> "\[HeartSuit]"};
+      x = 
+       If[#[[1, 2]] == #[[2, 2]], #[[All, 2]], 
+          If[#[[1, 1]] == #[[2, 1]], #[[All, 2]]~
+            Join~{s}, #[[All, 2]]~Join~{o}]] & /@ y;
+      w = 
+       StringJoin /@ (ToString /@ # & /@ (x /. {10 -> t, "J" -> j, 
+             "Q" -> q, "K" -> k, "A" -> a}));
+      Thread[y -> w]
+      ], st][[1, 1]];
+pc[p_] := 
+  Thread@{Range@
+     169, (If[Length@DeleteDuplicates@#[[All, 1]] == 1, 
+         Thread@{{"\[SpadeSuit]", "\[SpadeSuit]"}, #[[All, 2]]}, 
+         Thread@{{"\[SpadeSuit]", "\[HeartSuit]"}, #[[All, 2]]}] & /@ 
+       ToExpression["b" <> ToString[p]][[All, 2]]) /. 
+     Module[{z, y, x, w, v, u},
+      z = 
+       Thread@{Reverse[carddeck[[1 ;; -1 ;; 4]]], 
+         Reverse[carddeck[[4 ;; -1 ;; 4]]]};
+      y = 
+       Select[sortbysc /@ 
+          Subsets[Sort@Flatten[z, 1], {2}], #[[1, 1]] == 
+           "\[HeartSuit]" &] /. {"\[HeartSuit]" -> "\[SpadeSuit]", 
+         "\[SpadeSuit]" -> "\[HeartSuit]"};
+      x = 
+       If[#[[1, 2]] == #[[2, 2]], #[[All, 2]], 
+          If[#[[1, 1]] == #[[2, 1]], #[[All, 2]]~
+            Join~{s}, #[[All, 2]]~Join~{o}]] & /@ y;
+      w = 
+       StringJoin /@ (ToString /@ # & /@ (x /. {10 -> t, "J" -> j, 
+             "Q" -> q, "K" -> k, "A" -> a}));
+      Thread[y -> w]
+      ]};
+pcg[n_Integer] := 
+  Grid[Partition[pc[n][[All, 2]], 13], 
+   Background ->  {Automatic, Automatic, 
+     Thread[Flatten[Table[{i, j} , {i, 13}, {j, 13}], 
+        1] -> ((First@Characters@# & /@ pc[n][[All, 2]]) /. 
+         Thread[ToString /@ (Reverse[carddeck[[4 ;; -1 ;; 4]]][[All, 
+               2]] /. {10 -> t, "J" -> j, "Q" -> q, "K" -> k, 
+               "A" -> a}) -> 
+           With[{a = Hue[#] & /@ (1/Range@13)}, 
+            Rest@a~Join~{a[[1]]}]])]}];
+
+pb[p_, st_] := 
+  Position[(If[Length@DeleteDuplicates@#[[All, 1]] == 1, 
+         Thread@{{"\[SpadeSuit]", "\[SpadeSuit]"}, #[[All, 2]]}, 
+         Thread@{{"\[SpadeSuit]", "\[HeartSuit]"}, #[[All, 2]]}] & /@ 
+       ToExpression["b" <> ToString[p]][[All, 2]]) /. 
+     Module[{z, y, x, w, v, u},
+      z = 
+       Thread@{Reverse[carddeck[[1 ;; -1 ;; 4]]], 
+         Reverse[carddeck[[4 ;; -1 ;; 4]]]};
+      y = 
+       Select[sortbysc /@ 
+          Subsets[Sort@Flatten[z, 1], {2}], #[[1, 1]] == 
+           "\[HeartSuit]" &] /. {"\[HeartSuit]" -> "\[SpadeSuit]", 
+         "\[SpadeSuit]" -> "\[HeartSuit]"};
+      x = 
+       If[#[[1, 2]] == #[[2, 2]], #[[All, 2]], 
+          If[#[[1, 1]] == #[[2, 1]], #[[All, 2]]~
+            Join~{s}, #[[All, 2]]~Join~{o}]] & /@ y;
+      w = 
+       StringJoin /@ (ToString /@ # & /@ (x /. {10 -> t, "J" -> j, 
+             "Q" -> q, "K" -> k, "A" -> a}));
+      Thread[y -> w]
+      ], st][[1, 1]];
+"functions"
+
+(*comp@5*)
